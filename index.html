@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>civil AI help</title>
+  <style>
+    /* CSS Variables */
+    :root {
+      --primary-color: #000000;           /* Black instead of green */
+      --primary-color-dark: #222222;        /* Darker black/gray for hover states */
+      --ai-bg: #f7f7f8;
+      --user-bg: #000000;                  /* User messages now use black */
+      --error-bg: #ffcccc;
+      --text-color: #374151;
+      --user-text: #ffffff;
+      --ai-text: #374151;
+      --border-color: #e5e7eb;
+      --shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      --max-chat-width: 800px;
+    }
+
+    /* Global Reset */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #ffffff;
+      color: var(--text-color);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      overflow: hidden;
+    }
+    
+    /* Chat Container */
+    .chat-container {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      max-width: var(--max-chat-width);
+      height: 100vh;
+      border: 1px solid var(--border-color);
+      box-shadow: var(--shadow);
+      background: #ffffff;
+    }
+    
+    /* Chat Box */
+    .chat-box {
+      flex: 1;
+      padding: 1rem;
+      overflow-y: auto;
+      scroll-behavior: smooth;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    
+    /* Message Bubbles */
+    .message {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.5rem;
+      max-width: 90%;
+      animation: fadeIn 0.3s ease-out;
+    }
+    
+    /* AI messages align left */
+    .message.ai {
+      align-self: flex-start;
+    }
+    
+    /* User messages align right (reverse order so avatar stays at the edge) */
+    .message.user {
+      align-self: flex-end;
+      flex-direction: row-reverse;
+    }
+    
+    /* Error message bubble */
+    .message.error {
+      background: var(--error-bg);
+      color: var(--text-color);
+      padding: 0.75rem 1rem;
+      border-radius: 0.75rem;
+      box-shadow: var(--shadow);
+    }
+    
+    /* Avatar styling */
+    .message .avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--primary-color);
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+    
+    /* Message content container */
+    .message-content {
+      background: var(--ai-bg);
+      color: var(--ai-text);
+      padding: 0.75rem 1rem;
+      border-radius: 0.75rem;
+      box-shadow: var(--shadow);
+      word-wrap: break-word;
+      position: relative;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+    
+    /* User message content styling */
+    .message.user .message-content {
+      background: var(--user-bg);
+      color: var(--user-text);
+    }
+    
+    /* Code and preformatted text styling */
+    .message-content pre {
+      background: #f0f0f0;
+      padding: 1rem;
+      border-radius: 0.5rem;
+      overflow-x: auto;
+      font-family: monospace;
+      white-space: pre-wrap;
+      margin: 0.5rem 0;
+    }
+    
+    /* Fade-in animation for messages */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* Input Container (sticky at bottom) */
+    .input-container {
+      padding: 1rem;
+      border-top: 1px solid var(--border-color);
+      background: #ffffff;
+    }
+    
+    .input-box {
+      display: flex;
+      gap: 0.5rem;
+    }
+    
+    /* Multi-line textarea that auto-resizes */
+    textarea {
+      flex: 1;
+      padding: 0.75rem 1rem;
+      border: 1px solid var(--border-color);
+      border-radius: 0.5rem;
+      resize: none;
+      font-family: inherit;
+      font-size: 1rem;
+      line-height: 1.5;
+      min-height: 44px;
+      max-height: 200px;
+      background: #ffffff;
+    }
+    
+    textarea:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(16, 163, 127, 0.1);
+    }
+    
+    /* Send button styling with hover effect */
+    button {
+      padding: 0.75rem 1.5rem;
+      background: var(--primary-color);
+      color: #ffffff;
+      border: none;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      font-weight: 500;
+      transition: background 0.2s;
+    }
+    
+    button:hover {
+      background: var(--primary-color-dark);
+    }
+    
+    /* Typing indicator styling (three animated dots) */
+    .typing-indicator {
+      display: inline-flex;
+      gap: 0.25rem;
+      padding: 0.5rem 1rem;
+    }
+    
+    .typing-dot {
+      width: 6px;
+      height: 6px;
+      background: #9ca3af;
+      border-radius: 50%;
+      animation: typing 1.4s infinite ease-in-out;
+    }
+    
+    .typing-dot:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+    
+    .typing-dot:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+    
+    @keyframes typing {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-4px); }
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 600px) {
+      .chat-container {
+        height: 100vh;
+        border: none;
+        box-shadow: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="chat-container">
+    <!-- Chat Box: displays all messages -->
+    <div class="chat-box" id="chatBox">
+      <!-- Initial AI message -->
+      <div class="message ai">
+        <div class="avatar">AI</div>
+        <div class="message-content">
+          Hello! I'm AI assistant assembled by Sarthak Aganja. How can I help you today?
+        </div>
+      </div>
+    </div>
+    <!-- Input Container: sticky area for composing new messages -->
+    <div class="input-container">
+      <div class="input-box">
+        <textarea 
+          id="chatInput" 
+          placeholder="Send a message..." 
+          rows="1"
+        ></textarea>
+        <button id="sendButton">Send</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function a(G,o){const c=m();return a=function(Y,V){Y=Y-0xeb;let A=c[Y];return A;},a(G,o);}const D=a;(function(G,o){const u=a,c=G();while(!![]){try{const Y=-parseInt(u(0xf8))/0x1+-parseInt(u(0x12b))/0x2*(parseInt(u(0x116))/0x3)+parseInt(u(0x12a))/0x4+parseInt(u(0x125))/0x5+parseInt(u(0xfa))/0x6*(-parseInt(u(0xeb))/0x7)+-parseInt(u(0x10a))/0x8*(-parseInt(u(0x129))/0x9)+-parseInt(u(0x105))/0xa*(parseInt(u(0x108))/0xb);if(Y===o)break;else c['push'](c['shift']());}catch(V){c['push'](c['shift']());}}}(m,0xe3281),document[D(0x11a)](D(0x10f),function(G){G['preventDefault'](),alert('Right-click\x20is\x20disabled\x20on\x20this\x20page.');}));const apiURL=D(0x100),chatBox=document[D(0xf1)]('chatBox'),chatInput=document[D(0xf1)]('chatInput'),sendButton=document[D(0xf1)]('sendButton');function parseMarkdown(G){const T=D;return G=G['replace'](/&/g,T(0xf3))['replace'](/</g,T(0xf2))['replace'](/>/g,'&gt;'),G=G[T(0xf6)](/```([\s\S]*?)```/g,function(o,c){const B=T;return B(0x111)+c+B(0xf5);}),G=G[T(0xf6)](/`([^`]+)`/g,T(0x106)),G=G[T(0xf6)](/\*\*([^*]+)\*\*/g,T(0x123)),G=G[T(0xf6)](/\*([^*]+)\*/g,T(0x11e)),G=G[T(0xf6)](/\n/g,T(0xfd)),G;}function createMessage(G,o,c=![]){const w=D,Y=document[w(0x104)](w(0x122));Y[w(0x11b)]=w(0x120)+(o?w(0xfe):'ai')+'\x20'+(c?w(0x10b):'');const V=document[w(0x104)](w(0x122));V['className']='avatar',V[w(0x102)]=o?w(0xf4):'AI';const A=document[w(0x104)](w(0x122));return A[w(0x11b)]=w(0x109),typeof G===w(0x12c)?A['innerHTML']=parseMarkdown(G):A['innerHTML']=w(0x119)+JSON[w(0x101)](G,null,0x2)+w(0x127),Y[w(0x10e)](V),Y[w(0x10e)](A),Y;}function m(){const E=['1236150uZxJpR','scrollTop','</pre>','Error:\x20','900kBSFTD','5670288LzeDLB','3056866cagfhl','string','63gcbrYa','\x0a\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22typing-dot\x22></div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22typing-dot\x22></div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22typing-dot\x22></div>\x0a\x20\x20\x20\x20\x20\x20','trim','height','keydown','typing-indicator','getElementById','&lt;','&amp;','You','</code></pre>','replace','scrollHeight','121730EQZsUc','preventDefault','312966BpOjjd','input','innerHTML','<br>','user','removeChild','https://wild-thunder-7460.sarthak-aganja12345.workers.dev/','stringify','textContent','POST','createElement','10WNhwyH','<code>$1</code>','shiftKey','4559027fNhnNz','message-content','143976LVzbkb','error','focus','Enter','appendChild','contextmenu','value','<pre><code>','status','.message-content','load','message','3iPAdTe','querySelector','style','<pre>','addEventListener','className','response','auto','<em>$1</em>','application/json','message\x20','key','div','<strong>$1</strong>','min'];m=function(){return E;};return m();}function createTypingIndicator(){const L=D,G=document[L(0x104)](L(0x122));return G[L(0x11b)]=L(0xf0),G[L(0xfc)]=L(0xec),G;}async function sendMessage(){const x=D,G=chatInput[x(0x110)][x(0xed)]();if(!G)return;chatBox[x(0x10e)](createMessage(G,!![])),chatInput[x(0x110)]='',chatInput[x(0x118)][x(0xee)]=x(0x11d),chatBox[x(0x126)]=chatBox[x(0xf7)];const o=createMessage('',![]),c=createTypingIndicator();o[x(0x117)](x(0x113))['appendChild'](c),chatBox[x(0x10e)](o),chatBox['scrollTop']=chatBox[x(0xf7)];try{const Y=await fetch(apiURL,{'method':x(0x103),'headers':{'Content-Type':x(0x11f)},'body':JSON['stringify']({'prompt':G})});if(!Y['ok'])throw new Error('HTTP\x20error!\x20Status:\x20'+Y[x(0x112)]);const V=await Y['json']();chatBox[x(0xff)](o),chatBox['appendChild'](createMessage(V[x(0x11c)],![]));}catch(A){chatBox[x(0xff)](o),chatBox['appendChild'](createMessage(x(0x128)+A[x(0x115)],![],!![]));}chatBox[x(0x126)]=chatBox[x(0xf7)];}chatInput[D(0x11a)](D(0xfb),()=>{const W=D;chatInput[W(0x118)][W(0xee)]=W(0x11d),chatInput['style'][W(0xee)]=Math[W(0x124)](chatInput[W(0xf7)],0xc8)+'px';}),chatInput[D(0x11a)](D(0xef),G=>{const H=D;G[H(0x121)]===H(0x10d)&&!G[H(0x107)]&&(G[H(0xf9)](),sendMessage());}),sendButton['addEventListener']('click',sendMessage),window['addEventListener'](D(0x114),()=>{const t=D;chatInput[t(0x10c)]();});  </script>
+</body>
+</html>
